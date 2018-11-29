@@ -74,7 +74,7 @@ public class Renderer implements GLEventListener, MouseListener,
                 .withZenith(-Math.PI/5.)
                 .withAzimuth(Math.PI*(5/4.));
 
-        texture2D = new OGLTexture2D(gl, "/textures/stripes.jpg");
+        texture2D = new OGLTexture2D(gl, "/textures/base1_COLOR.png");
         textureViewer = new OGLTexture2D.Viewer(gl);
 
         renderTarget = new OGLRenderTarget(gl, 1024, 1024);
