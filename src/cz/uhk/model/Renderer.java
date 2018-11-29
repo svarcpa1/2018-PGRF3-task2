@@ -151,9 +151,9 @@ public class Renderer implements GLEventListener, MouseListener,
         gl.glUniform1f(locTime, time/10); // correct shader must be set before this
         gl.glUniformMatrix4fv(locMVPMatLight, 1, false, MVPMatLight.floatArray(), 0);
 
-        //function trampoline
+/*        //function trampoline
         gl.glUniform1i(locModeOfFunction,0);
-        buffers.draw(GL2GL3.GL_TRIANGLE_STRIP, shaderProgramLight);
+        buffers.draw(GL2GL3.GL_TRIANGLE_STRIP, shaderProgramLight);*/
 
         //still sphere
         gl.glUniform1i(locModeOfFunction,10);
@@ -208,8 +208,8 @@ public class Renderer implements GLEventListener, MouseListener,
         gl.glUniform1i(locModeOfLightSource,modeOfLightSource);
 
         //function trampoline
-        gl.glUniform1i(locModeOfFunction,0);
-        buffers.draw(GL2GL3.GL_TRIANGLE_STRIP, shaderProgram);
+/*        gl.glUniform1i(locModeOfFunction, 0);
+        buffers.draw(GL2GL3.GL_TRIANGLE_STRIP, shaderProgram);*/
 
         //still sphere
         gl.glUniform1i(locModeOfFunction,10);
@@ -219,10 +219,15 @@ public class Renderer implements GLEventListener, MouseListener,
         gl.glUniform1i(locModeOfFunction,11);
         buffers.draw(GL2GL3.GL_TRIANGLE_STRIP, shaderProgram);*/
 
-        //sun
+/*        //sun
         gl.glUniform1i(locModeOfFunction,12);
-        buffers.draw(GL2GL3.GL_TRIANGLE_STRIP, shaderProgram);
+        buffers.draw(GL2GL3.GL_TRIANGLE_STRIP, shaderProgram);*/
     }
+
+    private void setupParams(int shaderProgram){
+
+    }
+
 
     /**
      *

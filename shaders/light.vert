@@ -83,7 +83,7 @@ void main() {
     //generate "still" sphere
     if(modeOfFunction == 10){
         pos4 = vec4(getSphere(pos)/3, 1.0);
-        pos4 = vec4(pos4.x+1.8, pos4.y+ time/10, (pos4.z+3), pos4.w);
+        pos4 = vec4(pos4.x+1.8, pos4.y, (pos4.z+3), pos4.w);
         normal= getSphereNormal(pos);
     }
     if(modeOfFunction == 0){
