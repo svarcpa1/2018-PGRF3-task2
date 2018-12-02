@@ -31,7 +31,7 @@ public class Renderer implements GLEventListener, MouseListener,
     private Mat4 viewMat, projMat, viewMatLight, projMatLight, MVPMatLight;
     private Camera camera;
     private OGLBuffers buffers;
-    private OGLTexture2D texture2D;
+    private OGLTexture2D texture2DBase, texture2DDisp, texture2DNrm;
     private OGLRenderTarget renderTarget;
     private OGLTexture2D.Viewer textureViewer;
 
@@ -74,7 +74,10 @@ public class Renderer implements GLEventListener, MouseListener,
                 .withZenith(-Math.PI/5.)
                 .withAzimuth(Math.PI*(5/4.));
 
-        texture2D = new OGLTexture2D(gl, "/textures/base1_COLOR.png");
+        texture2DBase = new OGLTexture2D(gl, "/textures/base1_COLOR.png");
+        texture2DDisp = new OGLTexture2D(gl, "/textures/base1_DISP.png");
+        texture2DNrm = new OGLTexture2D(gl, "/textures/base1_NRM.png");
+
         textureViewer = new OGLTexture2D.Viewer(gl);
 
         renderTarget = new OGLRenderTarget(gl, 1024, 1024);
@@ -113,7 +116,7 @@ public class Renderer implements GLEventListener, MouseListener,
 
         //sides windows
         gl.glPolygonMode(GL2GL3.GL_FRONT_AND_BACK, GL2GL3.GL_FILL);
-        textureViewer.view(texture2D,-1,-1,0.5 );
+        textureViewer.view(texture2DBase,-1,-1,0.5 );
         textureViewer.view(renderTarget.getColorTexture(), -1, -0.5, 0.5);
         textureViewer.view(renderTarget.getDepthTexture(), -1, 0, 0.5);
     }
@@ -196,9 +199,11 @@ public class Renderer implements GLEventListener, MouseListener,
 
         gl.glUniformMatrix4fv(locMVPMatLight,1,false,MVPMatLight.floatArray(),0);
 
-        //texture
-        texture2D.bind(shaderProgram,"textureSampler", 0);
-        renderTarget.getDepthTexture().bind(shaderProgram,"textureSamplerDepth",1);
+        //textures binding
+        texture2DBase.bind(shaderProgram,"textureSampler", 0);
+        texture2DNrm.bind(shaderProgram,"textureSamplerNrm",1);
+        texture2DDisp.bind(shaderProgram,"textureSamplerDisp",2);
+        renderTarget.getDepthTexture().bind(shaderProgram,"textureSamplerDepth",2);
 
         //reflector
         gl.glUniform1f(locSpotCutOff,10.0f);

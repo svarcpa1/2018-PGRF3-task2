@@ -88,7 +88,7 @@ void main() {
     //generate moving sphere
     if(modeOfFunction == 10){
         pos4 = vec4(getSphere(pos)/3, 1.0);
-        pos4 = vec4(pos4.x+1.8, pos4.y+0+time/10, (pos4.z+3), pos4.w);
+        pos4 = vec4(pos4.x+1.8, pos4.y, (pos4.z+3), pos4.w);
         normal= getSphereNormal(pos);
     }
     //generate "sun"
@@ -113,7 +113,7 @@ void main() {
 	//light = lightPos-(viewMat*pos4).xyz;
 	light = lightPos-(pos4).xyz;
 
-	//per vertec mode
+	//per vertex mode
 	if(modeOfLight==0){
         //depth texture
         textCoordinatesDepth = MVPMatLight*pos4;
@@ -125,7 +125,6 @@ void main() {
 
 	//per pixel mode
 	}else{
-
         textCoordinates=inTexture;
         textCoordinatesDepth = MVPMatLight*pos4;
     }

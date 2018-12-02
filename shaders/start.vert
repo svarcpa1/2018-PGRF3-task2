@@ -113,7 +113,7 @@ void main() {
 	//light = lightPos-(viewMat*pos4).xyz;
 	light = lightPos-(pos4).xyz;
 
-	//per vertec mode
+	//per vertex mode
 	if(modeOfLight==0){
         //depth texture
         textCoordinatesDepth = MVPMatLight*pos4;
@@ -125,7 +125,6 @@ void main() {
 
 	//per pixel mode
 	}else{
-
         textCoordinates=inTexture;
         textCoordinatesDepth = MVPMatLight*pos4;
     }

@@ -9,6 +9,7 @@ in vec3 viewDirection;
 
 uniform sampler2D textureSampler;
 uniform sampler2D textureSamplerDepth;
+uniform sampler2D textureSamplerNrm;
 uniform int modeOfLight, modeOfLightSource;
 uniform float time;
 
@@ -33,9 +34,16 @@ void main() {
 
     //per pixel mode
 	else{
+        //vec3 normal_1=normal;
+
         vec3 ld = normalize( light );
         vec3 nd = normalize( normal );
         vec3 vd = normalize( viewDirection );
+
+        //normal mapping
+        nd = texture2D(textureSamplerNrm, textCoordinates).xyz;
+        nd *= 2;
+        nd -= 1;
 
         vec4 ambient = vec4(0.3,0.3,0.3,1);
         vec4 diffuse = vec4(0.5,0.5,0.5,1);
