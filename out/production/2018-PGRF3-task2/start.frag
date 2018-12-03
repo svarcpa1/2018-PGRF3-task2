@@ -6,16 +6,20 @@ in vec4 textCoordinatesDepth;
 in vec3 normal;
 in vec3 light;
 in vec3 viewDirection;
+in vec2 inPosition2;
 
 uniform sampler2D textureSampler;
 uniform sampler2D textureSamplerDepth;
-uniform int modeOfLight, modeOfLightSource;
+uniform sampler2D textureSamplerNrm;
+uniform sampler2D textureSamplerDisp;
+uniform int modeOfLight, modeOfLightSource, modeOfMapping;
 uniform float time;
 
 out vec4 outColor; // output from the fragment shader
 
 void main() {
     vec4 baseColor = texture(textureSampler, textCoordinates);
+    vec2 textC = textCoordinates;
 
 	//per vertex mode
 	if(modeOfLight==0){
@@ -33,9 +37,25 @@ void main() {
 
     //per pixel mode
 	else{
+        //vec3 normal_1=normal;
+
         vec3 ld = normalize( light );
         vec3 nd = normalize( normal );
         vec3 vd = normalize( viewDirection );
+
+
+        //todo
+        if(modeOfMapping==1){
+            float height = texture2D(textureSamplerDisp, inPosition2).r -0.5;
+            float v = height * 0.02 - 0.007;
+            textC = inPosition2 + (ld.xy * v).yx;
+        }
+
+        //normal mapping
+        nd = texture2D(textureSamplerNrm, textC).xyz;
+        nd *= 2;
+        nd -= 1;
+
 
         vec4 ambient = vec4(0.3,0.3,0.3,1);
         vec4 diffuse = vec4(0.5,0.5,0.5,1);

@@ -7,7 +7,7 @@ uniform mat4 viewMat;
 uniform mat4 projMat;
 uniform mat4 MVPMatLight;
 uniform float time;
-uniform int modeOfFunction, modeOfLight;
+uniform int modeOfFunction, modeOfLight, modeOfMapping;
 
 out vec3 vertColor;
 out vec2 textCoordinates;
@@ -15,6 +15,8 @@ out vec4 textCoordinatesDepth;
 out vec3 normal;
 out vec3 light;
 out vec3 viewDirection;
+out vec2 inPosition2;
+
 
 float PI = 3.1415;
 
@@ -72,6 +74,7 @@ vec3 getSphereNormal(vec2 xy){
     return cross(dx,dy);
 }
 
+
 void main() {
     vec2 pos = inPosition*2 - 1;
     vec4 pos4;
@@ -112,6 +115,10 @@ void main() {
 	//this would be used for moving light with viewer
 	//light = lightPos-(viewMat*pos4).xyz;
 	light = lightPos-(pos4).xyz;
+
+
+    //because of parallax
+    inPosition2 = inPosition;
 
 	//per vertex mode
 	if(modeOfLight==0){

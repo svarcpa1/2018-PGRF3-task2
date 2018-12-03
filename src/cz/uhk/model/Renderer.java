@@ -20,9 +20,9 @@ public class Renderer implements GLEventListener, MouseListener,
     private int width, height, ox, oy;
     private boolean modeOfRendering = true, modeOfProjection = true;
     private int locTime, locViewMat, locProjMat, locModeOfFunction, locModeOfLight,
-            locMVPMatLight, locSpotCutOff, locModeOfLightSource;
+            locMVPMatLight, locSpotCutOff, locModeOfLightSource, locModeOfMapping;
     private Vec3D positionLight, directionLight, upLight;
-    private int  modeOfLight = 0, modeOfLightSource=0;
+    private int  modeOfLight = 0, modeOfLightSource=0, modeOfMapping=0;
     private float time = 0.5f;
     private float tmp = 1f;
 
@@ -133,15 +133,10 @@ public class Renderer implements GLEventListener, MouseListener,
         gl.glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
         gl.glClear(GL2GL3.GL_COLOR_BUFFER_BIT | GL2GL3.GL_DEPTH_BUFFER_BIT);
 
-        locViewMat = gl.glGetUniformLocation(shaderProgramLight, "viewMat");
-        locProjMat = gl.glGetUniformLocation(shaderProgramLight, "projMat");
-        locTime = gl.glGetUniformLocation(shaderProgramLight, "time");
-        locModeOfFunction = gl.glGetUniformLocation(shaderProgramLight, "modeOfFunction");
+        setupSameVars(gl, shaderProgramLight);
         locMVPMatLight = gl.glGetUniformLocation(shaderProgramLight,"MVPMatLight");
 
-        time = time + tmp;
-        if(time >= 100.0f) tmp = -1f;
-        if(time <= 0.0f) tmp = 1f;
+        timeHandle();
 
         //for moving shadows with light
         positionLight = new Vec3D(5, 0+time/3, 8);
@@ -180,18 +175,13 @@ public class Renderer implements GLEventListener, MouseListener,
         gl.glClearColor(0.2f, 0.2f, 0.3f, 1.0f);
         gl.glClear(GL2GL3.GL_COLOR_BUFFER_BIT | GL2GL3.GL_DEPTH_BUFFER_BIT);
 
-        locViewMat = gl.glGetUniformLocation(shaderProgram, "viewMat");
-        locProjMat = gl.glGetUniformLocation(shaderProgram, "projMat");
-        locTime = gl.glGetUniformLocation(shaderProgram, "time");
-        locModeOfFunction = gl.glGetUniformLocation(shaderProgram, "modeOfFunction");
+        setupSameVars(gl,shaderProgram);
         locModeOfLight = gl.glGetUniformLocation(shaderProgram, "modeOfLight");
         locMVPMatLight = gl.glGetUniformLocation(shaderProgram,"MVPMatLight");
         locSpotCutOff = gl.glGetUniformLocation(shaderProgram,"spotOff");
         locModeOfLightSource = gl.glGetUniformLocation(shaderProgram,"modeOfLightSource");
 
-        time = time + tmp;
-        if(time >= 100.0f) tmp = -1f;
-        if(time <= 0.0f) tmp = 1f;
+        timeHandle();
 
         gl.glUniform1f(locTime, time/10); // correct shader must be set before this
         gl.glUniformMatrix4fv(locViewMat, 1, false, camera.getViewMatrix().floatArray(), 0);
@@ -199,14 +189,17 @@ public class Renderer implements GLEventListener, MouseListener,
 
         gl.glUniformMatrix4fv(locMVPMatLight,1,false,MVPMatLight.floatArray(),0);
 
-        //textures binding
-        texture2DBase.bind(shaderProgram,"textureSampler", 0);
-        texture2DNrm.bind(shaderProgram,"textureSamplerNrm",1);
-        texture2DDisp.bind(shaderProgram,"textureSamplerDisp",2);
-        renderTarget.getDepthTexture().bind(shaderProgram,"textureSamplerDepth",2);
+
+        //mappingMode
+        gl.glUniform1i(locModeOfMapping,modeOfMapping);
+
+
+        textureSetup(modeOfMapping);
 
         //reflector
         gl.glUniform1f(locSpotCutOff,10.0f);
+
+
 
         //lightmode
         gl.glUniform1i(locModeOfLight,modeOfLight);
@@ -229,8 +222,34 @@ public class Renderer implements GLEventListener, MouseListener,
         buffers.draw(GL2GL3.GL_TRIANGLE_STRIP, shaderProgram);*/
     }
 
-    private void setupParams(int shaderProgram){
+    private void timeHandle(){
+        time = time + tmp;
+        if(time >= 100.0f) tmp = -1f;
+        if(time <= 0.0f) tmp = 1f;
+    }
 
+    private void setupSameVars(GL2GL3 gl, int shader){
+        locViewMat = gl.glGetUniformLocation(shader, "viewMat");
+        locProjMat = gl.glGetUniformLocation(shader, "projMat");
+        locTime = gl.glGetUniformLocation(shader, "time");
+        locModeOfFunction = gl.glGetUniformLocation(shader, "modeOfFunction");
+        locModeOfMapping = gl.glGetUniformLocation(shader, "modeOfMapping");
+    }
+
+    private void textureSetup(int mode){
+        //textures binding
+        //normal
+        if(mode==0){
+            texture2DBase.bind(shaderProgram,"textureSampler", 0);
+            texture2DNrm.bind(shaderProgram,"textureSamplerNrm",1);
+            renderTarget.getDepthTexture().bind(shaderProgram,"textureSamplerDepth",2);
+        }else {
+        //parallax
+            texture2DBase.bind(shaderProgram, "textureSampler", 0);
+            texture2DNrm.bind(shaderProgram, "textureSamplerNrm", 1);
+            texture2DDisp.bind(shaderProgram,"textureSamplerDisp",2);
+            renderTarget.getDepthTexture().bind(shaderProgram, "textureSamplerDepth", 3);
+        }
     }
 
 
@@ -306,6 +325,11 @@ public class Renderer implements GLEventListener, MouseListener,
             //M for changing mode (fill, line)
             case KeyEvent.VK_M:
                 modeOfRendering = !modeOfRendering;
+                break;
+            //N for changing mapping mode
+            case KeyEvent.VK_N:
+                modeOfMapping=(modeOfMapping+1)%2;
+                System.out.println(modeOfMapping);
                 break;
             //P for changing projection (persp, orto)
             case KeyEvent.VK_P:
