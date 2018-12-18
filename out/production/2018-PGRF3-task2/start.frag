@@ -37,33 +37,32 @@ void main() {
 
     //per pixel mode
 	else{
-        //vec3 normal_1=normal;
-
+        vec3 norm = normal;
         vec3 ld = normalize( light );
-        vec3 nd = normalize( normal );
         vec3 vd = normalize( viewDirection );
 
-
-        //todo
+        //if paralax
         if(modeOfMapping==1){
-            float height = texture2D(textureSamplerDisp, inPosition2).r -0.5;
-            float v = height * 0.02 - 0.007;
-            textC = inPosition2 + (ld.xy * v).yx;
+            float height = texture2D(textureSamplerDisp, inPosition2).r;
+            float scaleL=0.04;
+            float scaleH=0.0;
+            //textC = inPosition2 + (ld.xy * (height * scaleL - scaleH)).yx;
+            textC = inPosition2 + light.xy/light.z*(height * scaleL - scaleH);
+
+            //culling
+            if(textC.x> 1.0 || textC.y> 1.0 || textC.x< 0.0 || textC.y< 0.0) discard;
         }
 
         //normal mapping
-        nd = texture2D(textureSamplerNrm, textC).xyz;
-        nd *= 2;
-        nd -= 1;
-
+        norm = texture2D(textureSamplerNrm, textC).xyz * 2.0 - 1.0;
+        vec3 nd = normalize( norm );
 
         vec4 ambient = vec4(0.3,0.3,0.3,1);
         vec4 diffuse = vec4(0.5,0.5,0.5,1);
-        vec4 specular = vec4(0.9,0.9,0.9,1);
+        vec4 specular = vec4(0.9,0.9,0.0,1);
         vec4 totalAmbient = ambient * baseColor;
         vec4 totalDiffuse = vec4(0.0);
         vec4 totalSpecular = vec4(0.0);
-
 
         float NDotL = max(dot( nd, ld), 0.0 );
         vec3 reflection = normalize(((2.0 * nd)*NDotL)-ld);
@@ -81,7 +80,6 @@ void main() {
             float blend = clamp((spotEffect-spotOff)/(1-spotOff) ,0.0,1.0);
 
             if(spotEffect>spotOff){
-                //outColor = (totalAmbient + (totalDiffuse + totalSpecular));
                 outColor = mix(totalAmbient,(totalAmbient + (totalDiffuse + totalSpecular)),blend);
             }else{
                 outColor=totalAmbient;

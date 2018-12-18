@@ -15,12 +15,8 @@ out vec4 textCoordinatesDepth;
 out vec3 normal;
 out vec3 light;
 out vec3 viewDirection;
-
 out vec2 inPosition2;
 
-//todo
-//out mat3 tbn;
-//out vec2 vertInPos;
 
 float PI = 3.1415;
 
@@ -79,22 +75,6 @@ vec3 getSphereNormal(vec2 xy){
 }
 
 
-/*//todo
-mat3 paramTangentSphere(vec2 xy){
-    vec3 u;
-    vec3 v;
-
-    u = getSphereNormal(xy + vec2(0.001,0)) - getSphereNormal(xy - vec2(0.001,0));
-    v = getSphereNormal(xy + vec2(0, 0.001)) - getSphereNormal(xy - vec2(0, 0.001));
-
-	u= normalize(u);
-	v = normalize(v);
-	vec3 tz = cross(u,v);
-	v = cross(tz,u);
-	return mat3(u,v,tz);
-}*/
-
-
 void main() {
     vec2 pos = inPosition*2 - 1;
     vec4 pos4;
@@ -137,12 +117,7 @@ void main() {
 	light = lightPos-(pos4).xyz;
 
 
-/*	//todo
-	vertInPos=inPosition;
-	if(modeOfMapping==1){
-        tbn = paramTangentSphere(inPosition);
-    }*/
-
+    //because of parallax
     inPosition2 = inPosition;
 
 	//per vertex mode

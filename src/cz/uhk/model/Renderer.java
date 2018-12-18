@@ -35,10 +35,6 @@ public class Renderer implements GLEventListener, MouseListener,
     private OGLRenderTarget renderTarget;
     private OGLTexture2D.Viewer textureViewer;
 
-    /**
-     *initialization method for opengl
-     * @param glDrawable
-     */
     @Override
     public void init(GLAutoDrawable glDrawable) {
 
@@ -74,9 +70,9 @@ public class Renderer implements GLEventListener, MouseListener,
                 .withZenith(-Math.PI/5.)
                 .withAzimuth(Math.PI*(5/4.));
 
-        texture2DBase = new OGLTexture2D(gl, "/textures/base1_COLOR.png");
-        texture2DDisp = new OGLTexture2D(gl, "/textures/base1_DISP.png");
-        texture2DNrm = new OGLTexture2D(gl, "/textures/base1_NRM.png");
+        texture2DBase = new OGLTexture2D(gl, "/textures/wall.jpg");
+        texture2DDisp = new OGLTexture2D(gl, "/textures/wall_h.png");
+        texture2DNrm = new OGLTexture2D(gl, "/textures/wall_n.png");
 
         textureViewer = new OGLTexture2D.Viewer(gl);
 
@@ -88,10 +84,6 @@ public class Renderer implements GLEventListener, MouseListener,
         gl.glEnable(GL.GL_CULL_FACE);
     }
 
-    /**
-     *display method for opengl
-     * @param glDrawable
-     */
     @Override
     public void display(GLAutoDrawable glDrawable) {
         GL2GL3 gl = glDrawable.getGL().getGL2GL3();
@@ -121,11 +113,6 @@ public class Renderer implements GLEventListener, MouseListener,
         textureViewer.view(renderTarget.getDepthTexture(), -1, 0, 0.5);
     }
 
-    /**
-     *shader rendering from light position
-     * @param gl
-     * @param shaderProgramLight
-     */
     private void renderFromLight(GL2GL3 gl, int shaderProgramLight){
         gl.glUseProgram(shaderProgramLight);
         renderTarget.bind();
@@ -162,11 +149,6 @@ public class Renderer implements GLEventListener, MouseListener,
         buffers.draw(GL2GL3.GL_TRIANGLE_STRIP, shaderProgramLight);*/
     }
 
-    /**
-     *shader rendering from viewer position
-     * @param gl
-     * @param shaderProgram
-     */
     private void renderFromViewer(GL2GL3 gl, int shaderProgram){
         gl.glUseProgram(shaderProgram);
         gl.glBindFramebuffer(GL2GL3.GL_FRAMEBUFFER, 0);
@@ -193,13 +175,10 @@ public class Renderer implements GLEventListener, MouseListener,
         //mappingMode
         gl.glUniform1i(locModeOfMapping,modeOfMapping);
 
-
         textureSetup(modeOfMapping);
 
         //reflector
         gl.glUniform1f(locSpotCutOff,10.0f);
-
-
 
         //lightmode
         gl.glUniform1i(locModeOfLight,modeOfLight);
@@ -252,16 +231,6 @@ public class Renderer implements GLEventListener, MouseListener,
         }
     }
 
-
-    /**
-     *
-     * Method for handeling reshaping of the screen
-     * @param drawable
-     * @param x
-     * @param y
-     * @param width
-     * @param height
-     */
     @Override
     public void reshape(GLAutoDrawable drawable, int x, int y, int width, int height) {
         this.width = width;
@@ -352,10 +321,6 @@ public class Renderer implements GLEventListener, MouseListener,
     public void keyTyped(KeyEvent e) {
     }
 
-    /**
-     * Method called on dispose
-     * @param glDrawable
-     */
     @Override
     public void dispose(GLAutoDrawable glDrawable) {
         GL2GL3 gl = glDrawable.getGL().getGL2GL3();
