@@ -4,31 +4,36 @@ import com.jogamp.opengl.*;
 import cz.uhk.grid.GridFactory;
 import oglutils.*;
 import transforms.*;
+
 import java.awt.event.*;
 
 /**
  * Requires JOGL 2.3.0 or newer
  *
- * @author  PGRF FIM UHK, Pavel ŠVARC
+ * @author PGRF FIM UHK, Pavel ŠVARC
  * @version 1.0
- * @about   implementation of normal and prallax mapping
- * @DATE    2018-11-18
+ * @about implementation of normal and prallax mapping
+ * @DATE 2018-11-18
  */
 public class Renderer implements GLEventListener, MouseListener,
         MouseMotionListener, KeyListener {
 
     private int width, height, ox, oy;
-    private boolean modeOfRendering = true, modeOfProjection = true, sunMoving= true;
-    private int locTime, locViewMat, locProjMat, locModeOfFunction, locModeOfLight,
-            locMVPMatLight, locSpotCutOff, locModeOfLightSource, locModeOfMapping;
+    private boolean modeOfRendering = true, modeOfProjection = true, sunMoving = true;
+    private int locTime;
+    private int locViewMat;
+    private int locProjMat;
+    private int locModeOfFunction;
+    private int locMVPMatLight;
+    private int locModeOfMapping;
     private Vec3D positionLight, directionLight, upLight;
-    private int  modeOfLight = 0, modeOfLightSource=0, modeOfMapping=0, textType=0;
+    private int modeOfLight = 0, modeOfLightSource = 0, modeOfMapping = 0, textType = 0;
     private float time = 0.5f;
     private float tmp = 1f;
 
     private int shaderProgram, shaderProgramLight;
 
-    private Mat4 viewMat, projMat, viewMatLight, projMatLight, MVPMatLight;
+    private Mat4 projMat, viewMatLight, projMatLight, MVPMatLight;
     private Camera camera;
     private OGLBuffers buffers;
     private OGLTexture2D texture2DBase, texture2DDisp, texture2DNrm, texture2DBase1, texture2DDisp1, texture2DNrm1;
@@ -46,37 +51,29 @@ public class Renderer implements GLEventListener, MouseListener,
 
         shaderProgram = ShaderUtils.loadProgram(gl, "/start.vert",
                 "/start.frag",
-                null,null,null,null);
+                null, null, null, null);
         shaderProgramLight = ShaderUtils.loadProgram(gl, "/light.vert",
                 "/light.frag",
-                null,null,null,null);
+                null, null, null, null);
 
-        buffers= GridFactory.create(gl,50,50);
+        buffers = GridFactory.create(gl, 50, 50);
 
         Vec3D position = new Vec3D(5, 5, 5);
-        Vec3D direction = new Vec3D(0, 0, 0);
-        Vec3D up = new Vec3D(1, 0, 0);
 
         positionLight = new Vec3D(5, 0, 8);
         directionLight = new Vec3D(0, 2, 0).sub(positionLight);
         upLight = new Vec3D(0, 0, 1);
-        projMatLight = new Mat4OrthoRH(20,20,-20, 200.0);
+        projMatLight = new Mat4OrthoRH(20, 20, -20, 200.0);
 
-        viewMat = new Mat4ViewRH(position, direction, up);
         viewMatLight = new Mat4ViewRH(positionLight, directionLight, upLight);
         MVPMatLight = viewMatLight.mul(projMatLight);
 
         camera = new Camera().withPosition(position)
-                .withZenith(-Math.PI/5.)
-                .withAzimuth(Math.PI*(5/4.));
+                .withZenith(-Math.PI / 5.)
+                .withAzimuth(Math.PI * (5 / 4.));
 
-        texture2DBase = new OGLTexture2D(gl, "/textures/wall.jpg");
-        texture2DDisp = new OGLTexture2D(gl, "/textures/wall_h.png");
-        texture2DNrm = new OGLTexture2D(gl, "/textures/wall_n.png");
 
-        texture2DBase1 = new OGLTexture2D(gl, "/textures/base1_COLOR.png");
-        texture2DDisp1 = new OGLTexture2D(gl, "/textures/base1_DISP.png");
-        texture2DNrm1 = new OGLTexture2D(gl, "/textures/base1_NRM.png");
+        textureInit(gl);
 
         textureViewer = new OGLTexture2D.Viewer(gl);
 
@@ -93,16 +90,16 @@ public class Renderer implements GLEventListener, MouseListener,
         GL2GL3 gl = glDrawable.getGL().getGL2GL3();
 
         //choosing persp/ortho
-        if(modeOfProjection){
+        if (modeOfProjection) {
             projMat = new Mat4PerspRH(Math.PI / 4, height / (double) width, 1, 100.0);
-        }else {
+        } else {
             projMat = new Mat4OrthoRH(10, 10, 1, 100);
         }
 
         //choosing line/fill
-        if(modeOfRendering){
+        if (modeOfRendering) {
             gl.glPolygonMode(GL2GL3.GL_FRONT_AND_BACK, GL2GL3.GL_FILL);
-        }else {
+        } else {
             gl.glPolygonMode(GL2GL3.GL_FRONT_AND_BACK, GL2GL3.GL_LINE);
         }
 
@@ -115,7 +112,7 @@ public class Renderer implements GLEventListener, MouseListener,
         textureViewer.view(renderTarget.getDepthTexture(), -1, -1, 0.5);
     }
 
-    private void renderFromLight(GL2GL3 gl, int shaderProgramLight){
+    private void renderFromLight(GL2GL3 gl, int shaderProgramLight) {
         gl.glUseProgram(shaderProgramLight);
         renderTarget.bind();
 
@@ -123,93 +120,73 @@ public class Renderer implements GLEventListener, MouseListener,
         gl.glClear(GL2GL3.GL_COLOR_BUFFER_BIT | GL2GL3.GL_DEPTH_BUFFER_BIT);
 
         setupSameVars(gl, shaderProgramLight);
-        locMVPMatLight = gl.glGetUniformLocation(shaderProgramLight,"MVPMatLight");
+        locMVPMatLight = gl.glGetUniformLocation(shaderProgramLight, "MVPMatLight");
 
         timeHandle();
 
         //for moving shadows with light
-        positionLight = new Vec3D(5, 0+time/3, 8);
+        positionLight = new Vec3D(5, 0 + time / 3, 8);
         directionLight = new Vec3D(0, 2, 0).sub(positionLight);
         upLight = new Vec3D(0, 0, 1);
-        projMatLight = new Mat4OrthoRH(10,10,-20, 200.0);
+        projMatLight = new Mat4OrthoRH(10, 10, -20, 200.0);
         viewMatLight = new Mat4ViewRH(positionLight, directionLight, upLight);
         MVPMatLight = viewMatLight.mul(projMatLight);
 
-        gl.glUniform1f(locTime, time/10); // correct shader must be set before this
+        gl.glUniform1f(locTime, time / 10); // correct shader must be set before this
         gl.glUniformMatrix4fv(locMVPMatLight, 1, false, MVPMatLight.floatArray(), 0);
 
-/*        //function trampoline
-        gl.glUniform1i(locModeOfFunction,0);
-        buffers.draw(GL2GL3.GL_TRIANGLE_STRIP, shaderProgramLight);*/
-
         //still sphere
-        gl.glUniform1i(locModeOfFunction,10);
+        gl.glUniform1i(locModeOfFunction, 10);
         buffers.draw(GL2GL3.GL_TRIANGLE_STRIP, shaderProgramLight);
-
-/*        //still plain
-        gl.glUniform1i(locModeOfFunction,11);
-        buffers.draw(GL2GL3.GL_TRIANGLE_STRIP, shaderProgramLight);*/
     }
 
-    private void renderFromViewer(GL2GL3 gl, int shaderProgram){
+    private void renderFromViewer(GL2GL3 gl, int shaderProgram) {
         gl.glUseProgram(shaderProgram);
         gl.glBindFramebuffer(GL2GL3.GL_FRAMEBUFFER, 0);
-        gl.glViewport(0,0,width,height);
+        gl.glViewport(0, 0, width, height);
 
         gl.glClearColor(0.2f, 0.2f, 0.3f, 1.0f);
         gl.glClear(GL2GL3.GL_COLOR_BUFFER_BIT | GL2GL3.GL_DEPTH_BUFFER_BIT);
 
-        setupSameVars(gl,shaderProgram);
-        locModeOfLight = gl.glGetUniformLocation(shaderProgram, "modeOfLight");
-        locMVPMatLight = gl.glGetUniformLocation(shaderProgram,"MVPMatLight");
-        locSpotCutOff = gl.glGetUniformLocation(shaderProgram,"spotOff");
-        locModeOfLightSource = gl.glGetUniformLocation(shaderProgram,"modeOfLightSource");
+        setupSameVars(gl, shaderProgram);
+        int locModeOfLight = gl.glGetUniformLocation(shaderProgram, "modeOfLight");
+        locMVPMatLight = gl.glGetUniformLocation(shaderProgram, "MVPMatLight");
+        int locSpotCutOff = gl.glGetUniformLocation(shaderProgram, "spotOff");
+        int locModeOfLightSource = gl.glGetUniformLocation(shaderProgram, "modeOfLightSource");
 
         timeHandle();
 
-        gl.glUniform1f(locTime, time/10); // correct shader must be set before this
+        gl.glUniform1f(locTime, time / 10); // correct shader must be set before this
         gl.glUniformMatrix4fv(locViewMat, 1, false, camera.getViewMatrix().floatArray(), 0);
         gl.glUniformMatrix4fv(locProjMat, 1, false, projMat.floatArray(), 0);
 
-        gl.glUniformMatrix4fv(locMVPMatLight,1,false,MVPMatLight.floatArray(),0);
+        gl.glUniformMatrix4fv(locMVPMatLight, 1, false, MVPMatLight.floatArray(), 0);
 
 
         //mappingMode
-        gl.glUniform1i(locModeOfMapping,modeOfMapping);
+        gl.glUniform1i(locModeOfMapping, modeOfMapping);
 
         textureSetup(modeOfMapping);
 
         //reflector
-        gl.glUniform1f(locSpotCutOff,10.0f);
+        gl.glUniform1f(locSpotCutOff, 10.0f);
 
         //lightmode
-        gl.glUniform1i(locModeOfLight,modeOfLight);
-        gl.glUniform1i(locModeOfLightSource,modeOfLightSource);
-
-        //function trampoline
-/*        gl.glUniform1i(locModeOfFunction, 0);
-        buffers.draw(GL2GL3.GL_TRIANGLE_STRIP, shaderProgram);*/
+        gl.glUniform1i(locModeOfLight, modeOfLight);
+        gl.glUniform1i(locModeOfLightSource, modeOfLightSource);
 
         //still sphere
-        gl.glUniform1i(locModeOfFunction,10);
+        gl.glUniform1i(locModeOfFunction, 10);
         buffers.draw(GL2GL3.GL_TRIANGLE_STRIP, shaderProgram);
-
-/*        //still plain
-        gl.glUniform1i(locModeOfFunction,11);
-        buffers.draw(GL2GL3.GL_TRIANGLE_STRIP, shaderProgram);*/
-
-/*        //sun
-        gl.glUniform1i(locModeOfFunction,12);
-        buffers.draw(GL2GL3.GL_TRIANGLE_STRIP, shaderProgram);*/
     }
 
-    private void timeHandle(){
-        if(sunMoving) time = time + tmp;
-        if(time >= 100.0f) tmp = -1f;
-        if(time <= 0.0f) tmp = 1f;
+    private void timeHandle() {
+        if (sunMoving) time = time + tmp;
+        if (time >= 100.0f) tmp = -1f;
+        if (time <= 0.0f) tmp = 1f;
     }
 
-    private void setupSameVars(GL2GL3 gl, int shader){
+    private void setupSameVars(GL2GL3 gl, int shader) {
         locViewMat = gl.glGetUniformLocation(shader, "viewMat");
         locProjMat = gl.glGetUniformLocation(shader, "projMat");
         locTime = gl.glGetUniformLocation(shader, "time");
@@ -217,28 +194,37 @@ public class Renderer implements GLEventListener, MouseListener,
         locModeOfMapping = gl.glGetUniformLocation(shader, "modeOfMapping");
     }
 
-    private void textureSetup(int mode){
+    private void textureInit(GL2GL3 gl) {
+        texture2DBase = new OGLTexture2D(gl, "/textures/wall.jpg");
+        texture2DDisp = new OGLTexture2D(gl, "/textures/wall_h.png");
+        texture2DNrm = new OGLTexture2D(gl, "/textures/wall_n.png");
+        texture2DBase1 = new OGLTexture2D(gl, "/textures/base1_COLOR.png");
+        texture2DDisp1 = new OGLTexture2D(gl, "/textures/base1_DISP.png");
+        texture2DNrm1 = new OGLTexture2D(gl, "/textures/base1_NRM.png");
+    }
+
+    private void textureSetup(int mode) {
         //textures binding
         //normal
-        if(mode==0){
-            if(textType==0) {
+        if (mode == 0) {
+            if (textType == 0) {
                 texture2DBase.bind(shaderProgram, "textureSampler", 0);
                 texture2DNrm.bind(shaderProgram, "textureSamplerNrm", 1);
-            }else{
+            } else {
                 texture2DBase1.bind(shaderProgram, "textureSampler", 0);
                 texture2DNrm1.bind(shaderProgram, "textureSamplerNrm", 1);
             }
             renderTarget.getDepthTexture().bind(shaderProgram, "textureSamplerDepth", 2);
-        }else {
             //parallax
-            if(textType==0){
+        } else {
+            if (textType == 0) {
                 texture2DBase.bind(shaderProgram, "textureSampler", 0);
                 texture2DNrm.bind(shaderProgram, "textureSamplerNrm", 1);
-                texture2DDisp.bind(shaderProgram,"textureSamplerDisp",2);
-            }else{
+                texture2DDisp.bind(shaderProgram, "textureSamplerDisp", 2);
+            } else {
                 texture2DBase1.bind(shaderProgram, "textureSampler", 0);
                 texture2DNrm1.bind(shaderProgram, "textureSamplerNrm", 1);
-                texture2DDisp1.bind(shaderProgram,"textureSamplerDisp",2);
+                texture2DDisp1.bind(shaderProgram, "textureSamplerDisp", 2);
             }
             renderTarget.getDepthTexture().bind(shaderProgram, "textureSamplerDepth", 3);
         }
@@ -249,9 +235,9 @@ public class Renderer implements GLEventListener, MouseListener,
         this.width = width;
         this.height = height;
 
-        if(modeOfProjection){
+        if (modeOfProjection) {
             projMat = new Mat4PerspRH(Math.PI / 4, height / (double) width, 1, 100.0);
-        }else {
+        } else {
             projMat = new Mat4OrthoRH(Math.PI / 4, height / (double) width, 1, 100.0);
         }
     }
@@ -259,30 +245,37 @@ public class Renderer implements GLEventListener, MouseListener,
     @Override
     public void mouseClicked(MouseEvent e) {
     }
+
     @Override
     public void mouseEntered(MouseEvent e) {
     }
+
     @Override
     public void mouseExited(MouseEvent e) {
     }
+
     @Override
     public void mousePressed(MouseEvent e) {
         ox = e.getX();
         oy = e.getY();
     }
+
     @Override
     public void mouseReleased(MouseEvent e) {
 
     }
+
     @Override
     public void mouseDragged(MouseEvent e) {
         camera = camera.addAzimuth(Math.PI * (ox - e.getX()) / width).addZenith(Math.PI * (e.getY() - oy) / width);
         ox = e.getX();
         oy = e.getY();
     }
+
     @Override
     public void mouseMoved(MouseEvent e) {
     }
+
     @Override
     public void keyPressed(KeyEvent e) {
         switch (e.getKeyCode()) {
@@ -308,10 +301,9 @@ public class Renderer implements GLEventListener, MouseListener,
             case KeyEvent.VK_M:
                 modeOfRendering = !modeOfRendering;
                 break;
-            //N for changing mapping mode
+            //N for changing mapping mode works only in per pixel mode
             case KeyEvent.VK_N:
-                modeOfMapping=(modeOfMapping+1)%2;
-                System.out.println(modeOfMapping);
+                modeOfMapping = (modeOfMapping + 1) % 2;
                 break;
             //P for changing projection (persp, orto)
             case KeyEvent.VK_P:
@@ -319,25 +311,27 @@ public class Renderer implements GLEventListener, MouseListener,
                 break;
             //B for changing light (0 per vertex, i per pixel)
             case KeyEvent.VK_B:
-                modeOfLight=(modeOfLight+1)%2;
+                modeOfLight = (modeOfLight + 1) % 2;
                 break;
             //C for changing light mode (reflector or not in per pixel only)
             case KeyEvent.VK_C:
-                modeOfLightSource=(modeOfLightSource+1)%2;
+                modeOfLightSource = (modeOfLightSource + 1) % 2;
                 break;
             //X for changing textures
             case KeyEvent.VK_X:
-                textType=(textType+1)%2;
+                textType = (textType + 1) % 2;
                 break;
             //L for moving the sun
             case KeyEvent.VK_L:
-                sunMoving=!sunMoving;
+                sunMoving = !sunMoving;
                 break;
         }
     }
+
     @Override
     public void keyReleased(KeyEvent e) {
     }
+
     @Override
     public void keyTyped(KeyEvent e) {
     }
