@@ -46,7 +46,6 @@ void main() {
             float height = texture2D(textureSamplerDisp, inPosition2).r;
             float scaleL=0.04;
             float scaleH=0.0;
-            //textC = inPosition2 + (ld.xy * (height * scaleL - scaleH)).yx;
             textC = inPosition2 + light.xy/light.z*(height * scaleL - scaleH);
 
             //culling
@@ -55,6 +54,7 @@ void main() {
 
         //normal mapping
         norm = texture2D(textureSamplerNrm, textC).xyz * 2.0 - 1.0;
+
         vec3 nd = normalize( norm );
 
         vec4 ambient = vec4(0.3,0.3,0.3,1);

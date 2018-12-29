@@ -20,9 +20,9 @@ public class Renderer implements GLEventListener, MouseListener,
     private int width, height, ox, oy;
     private boolean modeOfRendering = true, modeOfProjection = true;
     private int locTime, locViewMat, locProjMat, locModeOfFunction, locModeOfLight,
-            locMVPMatLight, locSpotCutOff, locModeOfLightSource, locModeOfMapping;
+            locMVPMatLight, locSpotCutOff, locModeOfLightSource, locModeOfMapping, locTextType;
     private Vec3D positionLight, directionLight, upLight;
-    private int  modeOfLight = 0, modeOfLightSource=0, modeOfMapping=0;
+    private int  modeOfLight = 0, modeOfLightSource=0, modeOfMapping=0, textType=0;
     private float time = 0.5f;
     private float tmp = 1f;
 
@@ -31,7 +31,7 @@ public class Renderer implements GLEventListener, MouseListener,
     private Mat4 viewMat, projMat, viewMatLight, projMatLight, MVPMatLight;
     private Camera camera;
     private OGLBuffers buffers;
-    private OGLTexture2D texture2DBase, texture2DDisp, texture2DNrm;
+    private OGLTexture2D texture2DBase, texture2DDisp, texture2DNrm, texture2DBase1, texture2DDisp1, texture2DNrm1;
     private OGLRenderTarget renderTarget;
     private OGLTexture2D.Viewer textureViewer;
 
@@ -74,6 +74,10 @@ public class Renderer implements GLEventListener, MouseListener,
         texture2DDisp = new OGLTexture2D(gl, "/textures/wall_h.png");
         texture2DNrm = new OGLTexture2D(gl, "/textures/wall_n.png");
 
+        texture2DBase1 = new OGLTexture2D(gl, "/textures/base1_COLOR.png");
+        texture2DDisp1 = new OGLTexture2D(gl, "/textures/base1_DISP.png");
+        texture2DNrm1 = new OGLTexture2D(gl, "/textures/base1_NRM.png");
+
         textureViewer = new OGLTexture2D.Viewer(gl);
 
         renderTarget = new OGLRenderTarget(gl, 1024, 1024);
@@ -108,9 +112,7 @@ public class Renderer implements GLEventListener, MouseListener,
 
         //sides windows
         gl.glPolygonMode(GL2GL3.GL_FRONT_AND_BACK, GL2GL3.GL_FILL);
-        textureViewer.view(texture2DBase,-1,-1,0.5 );
-        textureViewer.view(renderTarget.getColorTexture(), -1, -0.5, 0.5);
-        textureViewer.view(renderTarget.getDepthTexture(), -1, 0, 0.5);
+        textureViewer.view(renderTarget.getDepthTexture(), -1, -1, 0.5);
     }
 
     private void renderFromLight(GL2GL3 gl, int shaderProgramLight){
@@ -219,14 +221,25 @@ public class Renderer implements GLEventListener, MouseListener,
         //textures binding
         //normal
         if(mode==0){
-            texture2DBase.bind(shaderProgram,"textureSampler", 0);
-            texture2DNrm.bind(shaderProgram,"textureSamplerNrm",1);
-            renderTarget.getDepthTexture().bind(shaderProgram,"textureSamplerDepth",2);
+            if(textType==0) {
+                texture2DBase.bind(shaderProgram, "textureSampler", 0);
+                texture2DNrm.bind(shaderProgram, "textureSamplerNrm", 1);
+            }else{
+                texture2DBase1.bind(shaderProgram, "textureSampler", 0);
+                texture2DNrm1.bind(shaderProgram, "textureSamplerNrm", 1);
+            }
+            renderTarget.getDepthTexture().bind(shaderProgram, "textureSamplerDepth", 2);
         }else {
-        //parallax
-            texture2DBase.bind(shaderProgram, "textureSampler", 0);
-            texture2DNrm.bind(shaderProgram, "textureSamplerNrm", 1);
-            texture2DDisp.bind(shaderProgram,"textureSamplerDisp",2);
+            //parallax
+            if(textType==0){
+                texture2DBase.bind(shaderProgram, "textureSampler", 0);
+                texture2DNrm.bind(shaderProgram, "textureSamplerNrm", 1);
+                texture2DDisp.bind(shaderProgram,"textureSamplerDisp",2);
+            }else{
+                texture2DBase1.bind(shaderProgram, "textureSampler", 0);
+                texture2DNrm1.bind(shaderProgram, "textureSamplerNrm", 1);
+                texture2DDisp1.bind(shaderProgram,"textureSamplerDisp",2);
+            }
             renderTarget.getDepthTexture().bind(shaderProgram, "textureSamplerDepth", 3);
         }
     }
@@ -311,6 +324,10 @@ public class Renderer implements GLEventListener, MouseListener,
             //C for changing light mode (reflector or not in per pixel only)
             case KeyEvent.VK_C:
                 modeOfLightSource=(modeOfLightSource+1)%2;
+                break;
+            //X for changing textures
+            case KeyEvent.VK_X:
+                textType=(textType+1)%2;
                 break;
         }
     }

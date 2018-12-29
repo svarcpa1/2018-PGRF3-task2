@@ -6,13 +6,9 @@ import oglutils.OGLBuffers;
 public class GridFactory {
 
     public static OGLBuffers create(GL2GL3 gl,int rows, int cols){
-        //VB = rows*cols*2 => every vertex has two coordinates
-        //*2 for texture
         float[] vertexBuffer = new float[2*2*rows*cols];
         int index=0;
 
-        //filling VB with values
-        //i/(rows-1)
         if(rows<=1 || cols<=1) throw new RuntimeException("cols or rows <´1");
 
         for(int j = 0; j<cols; j++){
@@ -29,19 +25,6 @@ public class GridFactory {
         //IB = (M-1)*(N-1)*2*3
         int[] indexBuffer = new int[(rows-1)*(cols-1)*2*3];
         int index2=0;
-
-/*        //triangles
-        for (int i =0; i<cols-1; i++){
-            for(int j=0; j<rows-1; j++){
-                indexBuffer[index2++] = (j+(i*rows));
-                indexBuffer[index2++] = (j+1+(i*rows));
-                indexBuffer[index2++] = (j+rows+(i*rows));
-
-                indexBuffer[index2++] = (j+1+(i*rows));
-                indexBuffer[index2++] = (j+1+rows+(i*rows));
-                indexBuffer[index2++] = (j+rows+(i*rows));
-            }
-        }*/
 
         //trinagle strip
         for(int i = 0; i < rows-1; i++){
