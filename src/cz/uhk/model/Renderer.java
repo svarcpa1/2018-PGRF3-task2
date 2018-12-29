@@ -18,9 +18,9 @@ public class Renderer implements GLEventListener, MouseListener,
         MouseMotionListener, KeyListener {
 
     private int width, height, ox, oy;
-    private boolean modeOfRendering = true, modeOfProjection = true;
+    private boolean modeOfRendering = true, modeOfProjection = true, sunMoving= true;
     private int locTime, locViewMat, locProjMat, locModeOfFunction, locModeOfLight,
-            locMVPMatLight, locSpotCutOff, locModeOfLightSource, locModeOfMapping, locTextType;
+            locMVPMatLight, locSpotCutOff, locModeOfLightSource, locModeOfMapping;
     private Vec3D positionLight, directionLight, upLight;
     private int  modeOfLight = 0, modeOfLightSource=0, modeOfMapping=0, textType=0;
     private float time = 0.5f;
@@ -204,7 +204,7 @@ public class Renderer implements GLEventListener, MouseListener,
     }
 
     private void timeHandle(){
-        time = time + tmp;
+        if(sunMoving) time = time + tmp;
         if(time >= 100.0f) tmp = -1f;
         if(time <= 0.0f) tmp = 1f;
     }
@@ -328,6 +328,10 @@ public class Renderer implements GLEventListener, MouseListener,
             //X for changing textures
             case KeyEvent.VK_X:
                 textType=(textType+1)%2;
+                break;
+            //L for moving the sun
+            case KeyEvent.VK_L:
+                sunMoving=!sunMoving;
                 break;
         }
     }
