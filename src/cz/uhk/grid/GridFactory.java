@@ -33,8 +33,9 @@ public class GridFactory {
                 if(i%2 != 0){
                     //if last one...
                     if(j == cols){
-                        indexBuffer[index2++]=cols-j+(i+1)*cols;
-                        indexBuffer[index2++]=cols-j+(i+1)*cols;
+                        int tmp = cols-j+(i+1)*cols;
+                        indexBuffer[index2++]= tmp;
+                        indexBuffer[index2++]= tmp;
                     }else{
                         indexBuffer[index2++]=i*cols+(cols-1)-j;
                         indexBuffer[index2++]=cols-1-j+(i+1)*cols;
@@ -42,8 +43,9 @@ public class GridFactory {
                 }else{
                     //if last one...
                     if(j == cols){
-                        indexBuffer[index2++]=j-1+(i+1)*cols;
-                        indexBuffer[index2++]=j-1+(i+1)*cols;
+                        int tmp = j-1+(i+1)*cols;
+                        indexBuffer[index2++]= tmp;
+                        indexBuffer[index2++]= tmp;
 
                     }else{
                         indexBuffer[index2++]=(1+i)*cols+j;
@@ -56,7 +58,7 @@ public class GridFactory {
         // vertex binding description, concise version
         OGLBuffers.Attrib[] attributes = {
                 new OGLBuffers.Attrib("inPosition", 2), // 2 floats (x, y)
-                new OGLBuffers.Attrib("inTexture", 2) //x,y to texture
+                new OGLBuffers.Attrib("inTexture", 2)   //x,y to texture
         };
         return new OGLBuffers(gl, vertexBuffer, attributes, indexBuffer);
     }
